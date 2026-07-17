@@ -8,14 +8,12 @@ import {
   deleteDoc,
   query,
   where,
-  orderBy,
   serverTimestamp,
   DocumentData,
   QueryConstraint,
   addDoc,
   onSnapshot,
   Unsubscribe,
-  limit,
 } from "firebase/firestore";
 import { db } from "./firebase";
 
@@ -26,22 +24,18 @@ const timestamps = () => ({
 
 export const firestoreService = {
   get: async <T>(collectionName: string, docId: string): Promise<T | null> => {
-    if (!db) return null;
-    try {
-      const snap = await getDoc(doc(db, collectionName, docId));
-      return snap.exists() ? ({ id: snap.id, ...snap.data() } as T) : null;
-    } catch {
-      return null;
-    }
+    if (!db) throw new Error("Firestore not initialized");
+    const snap = await getDoc(doc(db, collectionName, docId));
+    return snap.exists() ? ({ id: snap.id, ...snap.data() } as T) : null;
   },
 
   set: async (collectionName: string, docId: string, data: DocumentData) => {
-    if (!db) return;
+    if (!db) throw new Error("Firestore not initialized");
     await setDoc(doc(db, collectionName, docId), { ...data, ...timestamps() });
   },
 
   update: async (collectionName: string, docId: string, data: DocumentData) => {
-    if (!db) return;
+    if (!db) throw new Error("Firestore not initialized");
     await updateDoc(doc(db, collectionName, docId), {
       ...data,
       updatedAt: serverTimestamp(),
@@ -49,7 +43,7 @@ export const firestoreService = {
   },
 
   delete: async (collectionName: string, docId: string) => {
-    if (!db) return;
+    if (!db) throw new Error("Firestore not initialized");
     await deleteDoc(doc(db, collectionName, docId));
   },
 
@@ -57,18 +51,14 @@ export const firestoreService = {
     collectionName: string,
     constraints: QueryConstraint[] = [],
   ): Promise<T[]> => {
-    if (!db) return [];
-    try {
-      const q = query(collection(db, collectionName), ...constraints);
-      const snapshot = await getDocs(q);
-      return snapshot.docs.map((d) => ({ id: d.id, ...d.data() } as T));
-    } catch {
-      return [];
-    }
+    if (!db) throw new Error("Firestore not initialized");
+    const q = query(collection(db, collectionName), ...constraints);
+    const snapshot = await getDocs(q);
+    return snapshot.docs.map((d) => ({ id: d.id, ...d.data() } as T));
   },
 
   add: async (collectionName: string, data: DocumentData) => {
-    if (!db) return "";
+    if (!db) throw new Error("Firestore not initialized");
     const ref = await addDoc(collection(db, collectionName), {
       ...data,
       ...timestamps(),
@@ -76,23 +66,26 @@ export const firestoreService = {
     return ref.id;
   },
 
-  listByUser: <T>(collectionName: string, userId: string) =>
-    firestoreService.list<T>(collectionName, [
+  listByUser: async <T>(collectionName: string, userId: string) => {
+    const results = await firestoreService.list<T>(collectionName, [
       where("userId", "==", userId),
-      orderBy("createdAt", "desc"),
-    ]),
+    ]);
+    return results.sort((a: any, b: any) => (b.createdAt || 0) - (a.createdAt || 0));
+  },
 
-  listByUserAndMonth: <T>(
+  listByUserAndMonth: async <T>(
     collectionName: string,
     userId: string,
     month: number,
     year: number,
-  ) =>
-    firestoreService.list<T>(collectionName, [
+  ) => {
+    const results = await firestoreService.list<T>(collectionName, [
       where("userId", "==", userId),
       where("month", "==", month),
       where("year", "==", year),
-    ]),
+    ]);
+    return results.sort((a: any, b: any) => (b.createdAt || 0) - (a.createdAt || 0));
+  },
 
   subscribeToUser: <T>(
     collectionName: string,
@@ -107,13 +100,12 @@ export const firestoreService = {
     const q = query(
       collection(db, collectionName),
       where("userId", "==", userId),
-      orderBy("createdAt", "desc"),
     );
     return onSnapshot(
       q,
       (snapshot) => {
         const items = snapshot.docs.map((d) => ({ id: d.id, ...d.data() } as T));
-        callback(items);
+        callback(items.sort((a: any, b: any) => (b.createdAt || 0) - (a.createdAt || 0)));
       },
       (error) => {
         if (onError) onError(error);

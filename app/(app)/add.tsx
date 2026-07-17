@@ -8,6 +8,8 @@ import { useTransactionStore } from "../../src/features/transactions/store/trans
 import { INCOME_CATEGORIES, EXPENSE_CATEGORIES } from "../../src/features/transactions/types/transaction";
 import { Colors } from "../../src/theme";
 import { Button } from "../../src/components/ui/Button";
+import { useThemeStore } from "../../src/features/theme/store/themeStore";
+import { themeColor } from "../../src/features/theme/utils";
 
 export default function AddScreen() {
   const user = useAuthStore((s) => s.user);
@@ -18,6 +20,9 @@ export default function AddScreen() {
   const [category, setCategory] = useState("food");
   const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
   const [note, setNote] = useState("");
+
+  const isDark = useThemeStore((s) => s.isDark);
+  const c = (color: any) => themeColor(color, isDark);
 
   const categories = type === "income" ? INCOME_CATEGORIES : EXPENSE_CATEGORIES;
 
@@ -54,8 +59,7 @@ export default function AddScreen() {
         note: note.trim(),
       });
       Alert.alert("Success", type === "income" ? "Income added!" : "Expense added!", [
-        { text: "Add Another", onPress: () => { setAmount(""); setNote(""); } },
-        { text: "Done", onPress: () => router.back() },
+        { text: "OK", onPress: () => router.back() },
       ]);
     } catch (err: any) {
       Alert.alert("Error", err.message || "Failed to save");
@@ -63,7 +67,7 @@ export default function AddScreen() {
   };
 
   return (
-    <View className="flex-1" style={{ backgroundColor: "#F8FAFC" }}>
+    <View className="flex-1" style={{ backgroundColor: c(Colors.background) }}>
       <LinearGradient colors={Colors.primaryGradient} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} className="px-6 pt-16 pb-8">
         <View className="flex-row items-center justify-between mb-4">
           <TouchableOpacity onPress={() => router.back()} className="w-10 h-10 rounded-2xl items-center justify-center" style={{ backgroundColor: "rgba(255,255,255,0.2)" }}>
@@ -79,7 +83,7 @@ export default function AddScreen() {
               key={t}
               onPress={() => setType(t)}
               className="flex-1 py-3 rounded-xl items-center flex-row justify-center"
-              style={{ backgroundColor: type === t ? "#FFFFFF" : "transparent" }}
+              style={{ backgroundColor: type === t ? c(Colors.surface) : "transparent" }}
             >
               <Ionicons
                 name={t === "expense" ? "arrow-down-outline" : "arrow-up-outline"}
@@ -87,7 +91,7 @@ export default function AddScreen() {
                 color={type === t ? (t === "expense" ? Colors.error : Colors.success) : "#FFFFFF"}
                 style={{ marginRight: 6 }}
               />
-              <Text className="text-sm font-inter-semibold" style={{ color: type === t ? "#111827" : "#FFFFFF" }}>
+              <Text className="text-sm font-inter-semibold" style={{ color: type === t ? c(Colors.textPrimary) : c(Colors.surface) }}>
                 {t === "expense" ? "Expense" : "Income"}
               </Text>
             </TouchableOpacity>
@@ -96,11 +100,11 @@ export default function AddScreen() {
       </LinearGradient>
 
       <ScrollView className="flex-1 px-4 -mt-3" showsVerticalScrollIndicator={false}>
-        <View className="rounded-3xl p-5 mb-4" style={{ backgroundColor: "#FFFFFF", shadowColor: "#000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.04, shadowRadius: 8, elevation: 2 }}>
-          <Text className="text-sm font-inter-medium mb-2" style={{ color: "#64748B" }}>Amount</Text>
+        <View className="rounded-3xl p-5 mb-4" style={{ backgroundColor: c(Colors.surface), shadowColor: "#000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.04, shadowRadius: 8, elevation: 2 }}>
+          <Text className="text-sm font-inter-medium mb-2" style={{ color: c(Colors.textSecondary) }}>Amount</Text>
           <TextInput
             className="rounded-2xl px-5 py-4 text-3xl font-inter-bold text-center"
-            style={{ backgroundColor: "#F1F5F9", color: "#111827" }}
+            style={{ backgroundColor: c(Colors.border), color: c(Colors.textPrimary) }}
             placeholder="0"
             placeholderTextColor="#CBD5E1"
             keyboardType="numeric"
@@ -108,35 +112,35 @@ export default function AddScreen() {
             onChangeText={setAmount}
           />
 
-          <Text className="text-sm font-inter-medium mt-5 mb-3" style={{ color: "#64748B" }}>Category</Text>
+          <Text className="text-sm font-inter-medium mt-5 mb-3" style={{ color: c(Colors.textSecondary) }}>Category</Text>
           <View className="flex-row flex-wrap gap-2 mb-4">
             {categories.map((cat) => (
               <TouchableOpacity
                 key={cat.id}
                 onPress={() => setCategory(cat.id)}
                 className="flex-row items-center px-4 py-2.5 rounded-full"
-                style={{ backgroundColor: category === cat.id ? Colors.primary : "#F1F5F9" }}
+                style={{ backgroundColor: category === cat.id ? Colors.primary : c(Colors.border) }}
               >
                 <Ionicons name={cat.icon as any} size={16} color={category === cat.id ? "#FFFFFF" : cat.color} style={{ marginRight: 6 }} />
-                <Text className="text-sm font-inter-medium" style={{ color: category === cat.id ? "#FFFFFF" : "#111827" }}>{cat.label}</Text>
+                <Text className="text-sm font-inter-medium" style={{ color: category === cat.id ? c(Colors.surface) : c(Colors.textPrimary) }}>{cat.label}</Text>
               </TouchableOpacity>
             ))}
           </View>
 
-          <Text className="text-sm font-inter-medium mb-2" style={{ color: "#64748B" }}>Date</Text>
+          <Text className="text-sm font-inter-medium mb-2" style={{ color: c(Colors.textSecondary) }}>Date</Text>
           <TextInput
             className="rounded-2xl px-4 py-3.5 text-base font-inter-medium mb-4"
-            style={{ backgroundColor: "#F1F5F9", color: "#111827" }}
+            style={{ backgroundColor: c(Colors.border), color: c(Colors.textPrimary) }}
             placeholder="YYYY-MM-DD"
             placeholderTextColor="#94A3B8"
             value={date}
             onChangeText={setDate}
           />
 
-          <Text className="text-sm font-inter-medium mb-2" style={{ color: "#64748B" }}>Note (optional)</Text>
+          <Text className="text-sm font-inter-medium mb-2" style={{ color: c(Colors.textSecondary) }}>Note (optional)</Text>
           <TextInput
             className="rounded-2xl px-4 py-3.5 text-base font-inter-medium mb-6"
-            style={{ backgroundColor: "#F1F5F9", color: "#111827" }}
+            style={{ backgroundColor: c(Colors.border), color: c(Colors.textPrimary) }}
             placeholder="Add details..."
             placeholderTextColor="#94A3B8"
             value={note}

@@ -14,6 +14,7 @@ import {
 import * as SplashScreen from "expo-splash-screen";
 import { AuthProvider } from "../src/auth/AuthContext";
 import { AuthBridge } from "../src/auth/AuthBridge";
+import { NotificationInit } from "../src/features/notifications/components/NotificationInit";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -37,6 +38,7 @@ export default function RootLayout() {
   return (
     <AuthProvider>
       <AuthBridge>
+        <NotificationInit />
         <StatusBar style="light" />
         <Stack screenOptions={{ headerShown: false }}>
           <Stack.Screen name="index" options={{ animation: "fade" }} />

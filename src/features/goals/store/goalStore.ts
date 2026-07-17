@@ -56,6 +56,8 @@ export const useGoalStore = create<GoalStore>((set, get) => ({
       get().recalculateTotals();
     } catch (err: any) {
       set({ error: err.message, isLoading: false });
+      console.error("fetchGoals failed:", err);
+      throw err;
     }
   },
 
@@ -74,6 +76,7 @@ export const useGoalStore = create<GoalStore>((set, get) => ({
       get().recalculateTotals();
     } catch (err: any) {
       set({ error: err.message });
+      throw err;
     }
   },
 
@@ -88,6 +91,7 @@ export const useGoalStore = create<GoalStore>((set, get) => ({
       get().recalculateTotals();
     } catch (err: any) {
       set({ error: err.message });
+      throw err;
     }
   },
 
@@ -98,6 +102,7 @@ export const useGoalStore = create<GoalStore>((set, get) => ({
       get().recalculateTotals();
     } catch (err: any) {
       set({ error: err.message });
+      throw err;
     }
   },
 

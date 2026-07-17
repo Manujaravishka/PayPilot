@@ -6,7 +6,7 @@ export const useGoals = (userId?: string) => {
 
   useEffect(() => {
     if (userId) {
-      store.fetchGoals(userId);
+      store.fetchGoals(userId).catch(() => {});
     }
   }, [userId]);
 

@@ -10,9 +10,13 @@ import { Colors } from "../../src/theme";
 import { Button } from "../../src/components/ui/Button";
 import { formatCurrency } from "../../src/utils/formatters";
 import { GOAL_TYPES } from "../../src/constants";
+import { useThemeStore } from "../../src/features/theme/store/themeStore";
+import { themeColor } from "../../src/features/theme/utils";
 
 export default function ReportsScreen() {
   const user = useAuthStore((s) => s.user);
+  const isDark = useThemeStore((s) => s.isDark);
+  const c = (color: any) => themeColor(color, isDark);
   const { transactions, fetchTransactions } = useTransactionStore();
   const { goals, isLoading: goalsLoading, fetchGoals, addGoal, updateGoal, deleteGoal, getGoalCalculations } = useGoalStore();
 
@@ -26,8 +30,8 @@ export default function ReportsScreen() {
 
   useEffect(() => {
     if (user?.uid) {
-      fetchTransactions(user.uid);
-      fetchGoals(user.uid);
+      fetchTransactions(user.uid).catch(() => {});
+      fetchGoals(user.uid).catch(() => {});
     }
   }, [user?.uid]);
 
@@ -130,7 +134,7 @@ export default function ReportsScreen() {
   const maxTrend = Math.max(...trendData.flatMap((d) => [d.income, d.expense]), 1);
 
   return (
-    <View className="flex-1" style={{ backgroundColor: "#F8FAFC" }}>
+    <View className="flex-1" style={{ backgroundColor: c(Colors.background) }}>
       <ScrollView showsVerticalScrollIndicator={false}>
         <LinearGradient colors={Colors.primaryGradient} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} className="px-6 pt-16 pb-8">
           <View className="flex-row items-center justify-between mb-4">
@@ -140,8 +144,8 @@ export default function ReportsScreen() {
         </LinearGradient>
 
         <View className="px-4 -mt-6">
-          <View className="rounded-3xl p-5 mb-4" style={{ backgroundColor: "#FFFFFF", shadowColor: "#000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.04, shadowRadius: 8, elevation: 2 }}>
-            <Text className="text-base font-inter-bold mb-4" style={{ color: "#111827" }}>Monthly Summary</Text>
+          <View className="rounded-3xl p-5 mb-4" style={{ backgroundColor: c(Colors.surface), shadowColor: "#000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.04, shadowRadius: 8, elevation: 2 }}>
+            <Text className="text-base font-inter-bold mb-4" style={{ color: c(Colors.textPrimary) }}>Monthly Summary</Text>
             <View className="flex-row gap-3 mb-3">
               <View className="flex-1 rounded-2xl p-3.5" style={{ backgroundColor: "rgba(34, 197, 94, 0.08)" }}>
                 <Text className="text-xs font-inter-medium text-success mb-1">Income</Text>
@@ -165,18 +169,18 @@ export default function ReportsScreen() {
           </View>
 
           {report.categories.length > 0 && (
-            <View className="rounded-3xl p-5 mb-4" style={{ backgroundColor: "#FFFFFF", shadowColor: "#000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.04, shadowRadius: 8, elevation: 2 }}>
-              <Text className="text-base font-inter-bold mb-4" style={{ color: "#111827" }}>Spending by Category</Text>
+            <View className="rounded-3xl p-5 mb-4" style={{ backgroundColor: c(Colors.surface), shadowColor: "#000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.04, shadowRadius: 8, elevation: 2 }}>
+              <Text className="text-base font-inter-bold mb-4" style={{ color: c(Colors.textPrimary) }}>Spending by Category</Text>
               {report.categories.map((cat) => (
                 <View key={cat.id} className="mb-3 last:mb-0">
                   <View className="flex-row items-center justify-between mb-1.5">
                     <View className="flex-row items-center gap-2">
                       <Ionicons name={cat.icon as any} size={16} color={cat.color} />
-                      <Text className="text-sm font-inter-medium" style={{ color: "#111827" }}>{cat.label}</Text>
+                      <Text className="text-sm font-inter-medium" style={{ color: c(Colors.textPrimary) }}>{cat.label}</Text>
                     </View>
-                    <Text className="text-sm font-inter-bold" style={{ color: "#111827" }}>Rs. {cat.amount.toLocaleString()}</Text>
+                    <Text className="text-sm font-inter-bold" style={{ color: c(Colors.textPrimary) }}>Rs. {cat.amount.toLocaleString()}</Text>
                   </View>
-                  <View className="h-2.5 rounded-full overflow-hidden" style={{ backgroundColor: "#F1F5F9" }}>
+                  <View className="h-2.5 rounded-full overflow-hidden" style={{ backgroundColor: c(Colors.border) }}>
                     <View className="h-full rounded-full" style={{ width: `${(cat.amount / Math.max(...report.categories.map((c) => c.amount), 1)) * 100}%`, backgroundColor: cat.color }} />
                   </View>
                 </View>
@@ -185,19 +189,19 @@ export default function ReportsScreen() {
           )}
 
           {report.dailySpending.length > 0 && (
-            <View className="rounded-3xl p-5 mb-4" style={{ backgroundColor: "#FFFFFF", shadowColor: "#000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.04, shadowRadius: 8, elevation: 2 }}>
-              <Text className="text-base font-inter-bold mb-4" style={{ color: "#111827" }}>Daily Spending</Text>
+            <View className="rounded-3xl p-5 mb-4" style={{ backgroundColor: c(Colors.surface), shadowColor: "#000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.04, shadowRadius: 8, elevation: 2 }}>
+              <Text className="text-base font-inter-bold mb-4" style={{ color: c(Colors.textPrimary) }}>Daily Spending</Text>
               <ScrollView horizontal showsHorizontalScrollIndicator={false}>
                 <View style={{ height: 160, flexDirection: "row", alignItems: "flex-end", gap: 4, paddingTop: 20 }}>
                   {report.dailySpending.map((d, i) => {
                     const height = (d.amount / report.maxDaily) * 130;
                     return (
                       <View key={i} className="items-center" style={{ width: 36 }}>
-                        <Text className="text-[9px] font-inter-regular text-textSecondary-light mb-1">
+                        <Text className="text-[9px] font-inter-regular mb-1" style={{ color: c(Colors.textSecondary) }}>
                           Rs.{d.amount >= 1000 ? `${(d.amount / 1000).toFixed(0)}k` : d.amount.toFixed(0)}
                         </Text>
                         <View className="rounded-t-lg" style={{ height: Math.max(height, 4), width: 24, backgroundColor: Colors.primary, opacity: 0.6 + (height / 140) * 0.4 }} />
-                        <Text className="text-[9px] font-inter-regular text-textSecondary-light mt-1">
+                        <Text className="text-[9px] font-inter-regular mt-1" style={{ color: c(Colors.textSecondary) }}>
                           {new Date(d.date).toLocaleDateString("en-US", { weekday: "short" })}
                         </Text>
                       </View>
@@ -209,8 +213,8 @@ export default function ReportsScreen() {
           )}
 
           {trendData.length > 1 && (
-            <View className="rounded-3xl p-5 mb-4" style={{ backgroundColor: "#FFFFFF", shadowColor: "#000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.04, shadowRadius: 8, elevation: 2 }}>
-              <Text className="text-base font-inter-bold mb-4" style={{ color: "#111827" }}>Monthly Trend</Text>
+            <View className="rounded-3xl p-5 mb-4" style={{ backgroundColor: c(Colors.surface), shadowColor: "#000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.04, shadowRadius: 8, elevation: 2 }}>
+              <Text className="text-base font-inter-bold mb-4" style={{ color: c(Colors.textPrimary) }}>Monthly Trend</Text>
               <View style={{ height: 160, flexDirection: "row", alignItems: "flex-end", gap: 6, paddingTop: 20 }}>
                 {trendData.map((m, i) => {
                   const incomeH = (m.income / maxTrend) * 120;
@@ -221,27 +225,27 @@ export default function ReportsScreen() {
                         <View className="rounded-t-lg flex-1" style={{ height: Math.max(incomeH, 2), backgroundColor: Colors.success, opacity: 0.8 }} />
                         <View className="rounded-t-lg flex-1" style={{ height: Math.max(expenseH, 2), backgroundColor: Colors.error, opacity: 0.8 }} />
                       </View>
-                      <Text className="text-[9px] font-inter-regular text-textSecondary-light mt-1">{m.label}</Text>
+                      <Text className="text-[9px] font-inter-regular mt-1" style={{ color: c(Colors.textSecondary) }}>{m.label}</Text>
                     </View>
                   );
                 })}
               </View>
-              <View className="flex-row justify-center gap-4 mt-3 pt-3" style={{ borderTopWidth: 1, borderColor: "#F1F5F9" }}>
+              <View className="flex-row justify-center gap-4 mt-3 pt-3" style={{ borderTopWidth: 1, borderColor: c(Colors.border) }}>
                 <View className="flex-row items-center gap-1.5">
                   <View className="w-3 h-3 rounded-full bg-success" />
-                  <Text className="text-xs font-inter-regular text-textSecondary-light">Income</Text>
+                  <Text className="text-xs font-inter-regular" style={{ color: c(Colors.textSecondary) }}>Income</Text>
                 </View>
                 <View className="flex-row items-center gap-1.5">
                   <View className="w-3 h-3 rounded-full bg-error" />
-                  <Text className="text-xs font-inter-regular text-textSecondary-light">Expenses</Text>
+                  <Text className="text-xs font-inter-regular" style={{ color: c(Colors.textSecondary) }}>Expenses</Text>
                 </View>
               </View>
             </View>
           )}
 
-          <View className="rounded-3xl p-5 mb-8" style={{ backgroundColor: "#FFFFFF", shadowColor: "#000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.04, shadowRadius: 8, elevation: 2 }}>
+          <View className="rounded-3xl p-5 mb-8" style={{ backgroundColor: c(Colors.surface), shadowColor: "#000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.04, shadowRadius: 8, elevation: 2 }}>
             <View className="flex-row items-center justify-between mb-4">
-              <Text className="text-base font-inter-bold" style={{ color: "#111827" }}>Savings Goals</Text>
+              <Text className="text-base font-inter-bold" style={{ color: c(Colors.textPrimary) }}>Savings Goals</Text>
               <TouchableOpacity
                 onPress={() => setShowGoalModal(true)}
                 className="px-4 py-2 rounded-xl"
@@ -254,18 +258,18 @@ export default function ReportsScreen() {
             {goals.length > 0 && (
               <View className="flex-row gap-3 mb-4">
                 <View className="flex-1 rounded-2xl p-3" style={{ backgroundColor: "rgba(34, 197, 94, 0.08)" }}>
-                  <Text className="text-xs font-inter-medium text-textSecondary-light">Saved</Text>
+                  <Text className="text-xs font-inter-medium" style={{ color: c(Colors.textSecondary) }}>Saved</Text>
                   <Text className="text-base font-inter-bold text-success mt-0.5">Rs. {totalSaved.toLocaleString()}</Text>
                 </View>
                 <View className="flex-1 rounded-2xl p-3" style={{ backgroundColor: "rgba(6, 182, 212, 0.08)" }}>
-                  <Text className="text-xs font-inter-medium text-textSecondary-light">Progress</Text>
+                  <Text className="text-xs font-inter-medium" style={{ color: c(Colors.textSecondary) }}>Progress</Text>
                   <Text className="text-base font-inter-bold text-info mt-0.5">{goalProgress.toFixed(0)}%</Text>
                 </View>
               </View>
             )}
 
             {goals.length > 0 && (
-              <View className="h-3 rounded-full overflow-hidden mb-4" style={{ backgroundColor: "#F1F5F9" }}>
+              <View className="h-3 rounded-full overflow-hidden mb-4" style={{ backgroundColor: c(Colors.border) }}>
                 <View className="h-full rounded-full" style={{ width: `${Math.min(goalProgress, 100)}%`, backgroundColor: Colors.primary }} />
               </View>
             )}
@@ -277,7 +281,7 @@ export default function ReportsScreen() {
                   key={goal.id}
                   onLongPress={() => deleteGoal(goal.id)}
                   className="rounded-2xl p-4 mb-2"
-                  style={{ backgroundColor: "#F8FAFC" }}
+                  style={{ backgroundColor: c(Colors.background) }}
                 >
                   <View className="flex-row items-center justify-between">
                     <View className="flex-row items-center gap-3 flex-1">
@@ -285,8 +289,8 @@ export default function ReportsScreen() {
                         <Ionicons name="flag-outline" size={20} color={Colors.success} />
                       </View>
                       <View className="flex-1">
-                        <Text className="text-sm font-inter-semibold" style={{ color: "#111827" }}>{goal.name}</Text>
-                        <Text className="text-xs font-inter-regular text-textSecondary-light">
+                        <Text className="text-sm font-inter-semibold" style={{ color: c(Colors.textPrimary) }}>{goal.name}</Text>
+                        <Text className="text-xs font-inter-regular" style={{ color: c(Colors.textSecondary) }}>
                           Rs. {goal.currentAmount.toLocaleString()} / Rs. {goal.targetAmount.toLocaleString()}
                         </Text>
                       </View>
@@ -299,7 +303,7 @@ export default function ReportsScreen() {
                       <Text className="text-white text-xs font-inter-semibold">Add</Text>
                     </TouchableOpacity>
                   </View>
-                  <View className="h-2 rounded-full overflow-hidden mt-2" style={{ backgroundColor: "#F1F5F9" }}>
+                  <View className="h-2 rounded-full overflow-hidden mt-2" style={{ backgroundColor: c(Colors.border) }}>
                     <View className="h-full rounded-full" style={{ width: `${Math.min(calc.progress, 100)}%`, backgroundColor: Colors.primary }} />
                   </View>
                 </TouchableOpacity>
@@ -308,11 +312,11 @@ export default function ReportsScreen() {
 
             {completedGoals.length > 0 && (
               <>
-                <Text className="text-sm font-inter-semibold text-textSecondary-light mb-2 mt-2">Completed</Text>
+                <Text className="text-sm font-inter-semibold mb-2 mt-2" style={{ color: c(Colors.textSecondary) }}>Completed</Text>
                 {completedGoals.map((goal) => (
                   <View key={goal.id} className="rounded-2xl p-3 mb-1 flex-row items-center gap-3" style={{ backgroundColor: "rgba(34, 197, 94, 0.06)" }}>
                     <Ionicons name="checkmark-circle" size={20} color={Colors.success} />
-                    <Text className="text-sm font-inter-medium flex-1" style={{ color: "#111827" }}>{goal.name}</Text>
+                    <Text className="text-sm font-inter-medium flex-1" style={{ color: c(Colors.textPrimary) }}>{goal.name}</Text>
                     <Text className="text-sm font-inter-bold text-success">Rs. {goal.currentAmount.toLocaleString()}</Text>
                   </View>
                 ))}
@@ -324,8 +328,8 @@ export default function ReportsScreen() {
                 <View className="w-16 h-16 rounded-full items-center justify-center mb-3" style={{ backgroundColor: "rgba(0, 166, 81, 0.08)" }}>
                   <Ionicons name="trophy-outline" size={28} color={Colors.primary} />
                 </View>
-                <Text className="text-base font-inter-semibold mb-1" style={{ color: "#111827" }}>No Goals Yet</Text>
-                <Text className="text-sm font-inter-regular text-textSecondary-light text-center px-8 mb-4">
+                <Text className="text-base font-inter-semibold mb-1" style={{ color: c(Colors.textPrimary) }}>No Goals Yet</Text>
+                <Text className="text-sm font-inter-regular text-center px-8 mb-4" style={{ color: c(Colors.textSecondary) }}>
                   Create savings goals to track your progress
                 </Text>
                 <Button title="Create Goal" onPress={() => setShowGoalModal(true)} />
@@ -337,28 +341,28 @@ export default function ReportsScreen() {
 
       <Modal visible={showGoalModal} transparent animationType="slide">
         <View className="flex-1 bg-black/40 justify-end">
-          <View className="rounded-t-3xl p-6 pb-10" style={{ backgroundColor: "#FFFFFF" }}>
+          <View className="rounded-t-3xl p-6 pb-10" style={{ backgroundColor: c(Colors.surface) }}>
             <ScrollView showsVerticalScrollIndicator={false}>
               <View className="flex-row justify-between items-center mb-6">
-                <Text className="text-xl font-inter-bold" style={{ color: "#111827" }}>New Goal</Text>
-                <TouchableOpacity onPress={() => setShowGoalModal(false)}><Ionicons name="close" size={24} color="#64748B" /></TouchableOpacity>
+                <Text className="text-xl font-inter-bold" style={{ color: c(Colors.textPrimary) }}>New Goal</Text>
+                <TouchableOpacity onPress={() => setShowGoalModal(false)}><Ionicons name="close" size={24} color={c(Colors.textSecondary)} /></TouchableOpacity>
               </View>
-              <Text className="text-sm font-inter-medium mb-3" style={{ color: "#64748B" }}>Type</Text>
+              <Text className="text-sm font-inter-medium mb-3" style={{ color: c(Colors.textSecondary) }}>Type</Text>
               <View className="flex-row flex-wrap gap-2 mb-4">
                 {GOAL_TYPES.map((gt) => (
-                  <TouchableOpacity key={gt.id} onPress={() => setGoalType(gt.id)} className="flex-row items-center px-4 py-2.5 rounded-full" style={{ backgroundColor: goalType === gt.id ? Colors.primary : "#F1F5F9" }}>
-                    <Ionicons name={gt.icon as any} size={16} color={goalType === gt.id ? "#FFFFFF" : gt.color} style={{ marginRight: 6 }} />
-                    <Text className="text-sm font-inter-medium" style={{ color: goalType === gt.id ? "#FFFFFF" : "#111827" }}>{gt.label}</Text>
+                  <TouchableOpacity key={gt.id} onPress={() => setGoalType(gt.id)} className="flex-row items-center px-4 py-2.5 rounded-full" style={{ backgroundColor: goalType === gt.id ? Colors.primary : c(Colors.border) }}>
+                    <Ionicons name={gt.icon as any} size={16} color={goalType === gt.id ? c(Colors.surface) : gt.color} style={{ marginRight: 6 }} />
+                    <Text className="text-sm font-inter-medium" style={{ color: goalType === gt.id ? c(Colors.surface) : c(Colors.textPrimary) }}>{gt.label}</Text>
                   </TouchableOpacity>
                 ))}
               </View>
-              <TextInput className="rounded-2xl px-4 py-3.5 text-base font-inter-medium mb-4" style={{ backgroundColor: "#F1F5F9", color: "#111827" }} placeholder="Goal name" placeholderTextColor="#94A3B8" value={goalName} onChangeText={setGoalName} />
-              <TextInput className="rounded-2xl px-4 py-3.5 text-base font-inter-medium mb-4" style={{ backgroundColor: "#F1F5F9", color: "#111827" }} placeholder="Target amount (Rs.)" placeholderTextColor="#94A3B8" keyboardType="numeric" value={goalTarget} onChangeText={setGoalTarget} />
-              <Text className="text-sm font-inter-medium mb-2" style={{ color: "#64748B" }}>Target (days)</Text>
+              <TextInput className="rounded-2xl px-4 py-3.5 text-base font-inter-medium mb-4" style={{ backgroundColor: c(Colors.border), color: c(Colors.textPrimary) }} placeholder="Goal name" placeholderTextColor="#94A3B8" value={goalName} onChangeText={setGoalName} />
+              <TextInput className="rounded-2xl px-4 py-3.5 text-base font-inter-medium mb-4" style={{ backgroundColor: c(Colors.border), color: c(Colors.textPrimary) }} placeholder="Target amount (Rs.)" placeholderTextColor="#94A3B8" keyboardType="numeric" value={goalTarget} onChangeText={setGoalTarget} />
+              <Text className="text-sm font-inter-medium mb-2" style={{ color: c(Colors.textSecondary) }}>Target (days)</Text>
               <View className="flex-row gap-2 mb-6">
                 {[{ label: "30d", value: "30" }, { label: "90d", value: "90" }, { label: "6mo", value: "180" }, { label: "1yr", value: "365" }].map((o) => (
-                  <TouchableOpacity key={o.value} onPress={() => setGoalDays(o.value)} className="flex-1 py-3 rounded-xl items-center" style={{ backgroundColor: goalDays === o.value ? Colors.primary : "#F1F5F9" }}>
-                    <Text className="text-sm font-inter-medium" style={{ color: goalDays === o.value ? "#FFFFFF" : "#111827" }}>{o.label}</Text>
+                  <TouchableOpacity key={o.value} onPress={() => setGoalDays(o.value)} className="flex-1 py-3 rounded-xl items-center" style={{ backgroundColor: goalDays === o.value ? Colors.primary : c(Colors.border) }}>
+                    <Text className="text-sm font-inter-medium" style={{ color: goalDays === o.value ? c(Colors.surface) : c(Colors.textPrimary) }}>{o.label}</Text>
                   </TouchableOpacity>
                 ))}
               </View>
@@ -370,9 +374,9 @@ export default function ReportsScreen() {
 
       <Modal visible={!!showAddMoney} transparent animationType="fade">
         <View className="flex-1 bg-black/40 items-center justify-center px-8">
-          <View className="rounded-3xl p-6 w-full" style={{ backgroundColor: "#FFFFFF" }}>
-            <Text className="text-lg font-inter-bold text-center mb-4" style={{ color: "#111827" }}>Add Money</Text>
-            <TextInput className="rounded-2xl px-4 py-3.5 text-xl font-inter-bold text-center mb-4" style={{ backgroundColor: "#F1F5F9", color: "#111827" }} placeholder="Amount" placeholderTextColor="#94A3B8" keyboardType="numeric" value={addAmount} onChangeText={setAddAmount} />
+          <View className="rounded-3xl p-6 w-full" style={{ backgroundColor: c(Colors.surface) }}>
+            <Text className="text-lg font-inter-bold text-center mb-4" style={{ color: c(Colors.textPrimary) }}>Add Money</Text>
+            <TextInput className="rounded-2xl px-4 py-3.5 text-xl font-inter-bold text-center mb-4" style={{ backgroundColor: c(Colors.border), color: c(Colors.textPrimary) }} placeholder="Amount" placeholderTextColor="#94A3B8" keyboardType="numeric" value={addAmount} onChangeText={setAddAmount} />
             <View className="flex-row gap-3">
               <View className="flex-1"><Button title="Cancel" variant="outline" onPress={() => { setShowAddMoney(null); setAddAmount(""); }} /></View>
               <View className="flex-1"><Button title="Add" onPress={handleAddMoney} /></View>

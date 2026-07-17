@@ -1,18 +1,30 @@
-import { useEffect } from "react";
 import { View, ActivityIndicator, TouchableOpacity, Text } from "react-native";
 import { Redirect, Tabs, router } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "../../src/auth/useAuth";
 import { useNotificationStore } from "../../src/features/notifications/store/notificationStore";
+import { useNotificationSettingsStore } from "../../src/features/notifications/store/notificationSettingsStore";
+import { useThemeStore } from "../../src/features/theme/store/themeStore";
+import { themeColor } from "../../src/features/theme/utils";
 import { Colors } from "../../src/theme";
+import { useEffect } from "react";
 
 export default function AppLayout() {
   const { isLoading, isAuthenticated } = useAuth();
   const unreadCount = useNotificationStore((s) => s.unreadCount);
+  const isDark = useThemeStore((s) => s.isDark);
+  const loadTheme = useThemeStore((s) => s.loadTheme);
+  const loadSettings = useNotificationSettingsStore((s) => s.loadSettings);
+  const c = (color: any) => themeColor(color, isDark);
+
+  useEffect(() => {
+    loadTheme();
+    loadSettings();
+  }, []);
 
   if (isLoading) {
     return (
-      <View className="flex-1 items-center justify-center" style={{ backgroundColor: "#F8FAFC" }}>
+      <View className="flex-1 items-center justify-center" style={{ backgroundColor: isDark ? Colors.backgroundDark : Colors.backgroundLight }}>
         <ActivityIndicator size="large" color={Colors.primary} />
       </View>
     );
@@ -27,10 +39,10 @@ export default function AppLayout() {
       screenOptions={{
         headerShown: false,
         tabBarActiveTintColor: Colors.primary,
-        tabBarInactiveTintColor: "#94A3B8",
+        tabBarInactiveTintColor: c(Colors.textSecondary),
         tabBarStyle: {
-          backgroundColor: "#FFFFFF",
-          borderTopColor: "#E2E8F0",
+          backgroundColor: isDark ? Colors.surfaceDark : Colors.surfaceLight,
+          borderTopColor: isDark ? Colors.borderDark : Colors.borderLight,
           borderTopWidth: 1,
           paddingTop: 6,
           paddingBottom: 28,
@@ -99,6 +111,43 @@ export default function AppLayout() {
                 <Ionicons name="add" size={30} color="#FFFFFF" />
               </View>
             </TouchableOpacity>
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="notifications"
+        options={{
+          title: "Alerts",
+          tabBarIcon: ({ color, size }) => (
+            <View>
+              <Ionicons name="notifications-outline" size={size} color={color} />
+              {unreadCount > 0 && (
+                <View
+                  style={{
+                    position: "absolute",
+                    top: -4,
+                    right: -8,
+                    backgroundColor: Colors.error,
+                    borderRadius: 10,
+                    minWidth: 18,
+                    height: 18,
+                    alignItems: "center",
+                    justifyContent: "center",
+                    paddingHorizontal: 4,
+                  }}
+                >
+                  <Text
+                    style={{
+                      color: "#FFFFFF",
+                      fontSize: 10,
+                      fontFamily: "Inter_700Bold",
+                    }}
+                  >
+                    {unreadCount > 99 ? "99+" : unreadCount}
+                  </Text>
+                </View>
+              )}
+            </View>
           ),
         }}
       />

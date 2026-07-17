@@ -32,6 +32,8 @@ export const useTransactionStore = create<TransactionStore>((set, get) => ({
       set({ transactions, isLoading: false });
     } catch (err: any) {
       set({ error: err.message, isLoading: false });
+      console.error("fetchTransactions failed:", err);
+      throw err;
     }
   },
 
@@ -56,6 +58,7 @@ export const useTransactionStore = create<TransactionStore>((set, get) => ({
       });
     } catch (err: any) {
       set({ error: err.message, isLoading: false });
+      throw err;
     }
   },
 
@@ -70,6 +73,7 @@ export const useTransactionStore = create<TransactionStore>((set, get) => ({
       });
     } catch (err: any) {
       set({ error: err.message, isLoading: false });
+      throw err;
     }
   },
 
@@ -84,6 +88,7 @@ export const useTransactionStore = create<TransactionStore>((set, get) => ({
       });
     } catch (err: any) {
       set({ error: err.message, isLoading: false });
+      throw err;
     }
   },
 
